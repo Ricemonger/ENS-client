@@ -25,6 +25,9 @@ public class Contacts {
         ContactCreUpdRequest body = new ContactCreUpdRequest(method,contactId,notificationName);
         return request(HttpMethod.POST, body);
     }
+    public Contact create(Contact contact){
+        return create(contact.getMethod().name(), contact.getContactId(), contact.getNotificationName());
+    }
     public Contact update(String method, String contactId, String notificationName){
         ContactCreUpdRequest body = new ContactCreUpdRequest(method,contactId,notificationName);
         return request(HttpMethod.PATCH, body);

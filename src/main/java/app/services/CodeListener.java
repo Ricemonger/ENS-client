@@ -1,5 +1,6 @@
 package app.services;
 
+import app.contact.Contact;
 import app.contact.Contacts;
 import app.notification.Notifications;
 import org.springframework.stereotype.Component;
@@ -8,11 +9,9 @@ import java.util.List;
 import java.util.Scanner;
 
 
-@Component
 public class CodeListener {
 
     private static final Scanner scanner = new Scanner(System.in);
-
 
     private Contacts contacts;
     private Notifications notifications;
@@ -120,14 +119,16 @@ public class CodeListener {
         System.out.println(notifications.getAllByPrimaryKey(name));
     }
     private void addContactsFromFile(){
-        List<Contacts> contactsList = ContactFiles.read();
-
+        List<Contact> contactsList = ContactFiles.inputAndReadFile();
+        for (Contact contact : contactsList){
+            System.out.println(contacts.create(contact) + " added to Database");
+        }
     }
+    //TODO IF CONTACT ALREADY EXISTS - UPDATE IT
     private String ask(String what){
         System.out.printf("Input %s :",what);
         return scanner.next();
     }
-    //TODO CSV AND XLS READER
 
     private static void printCodeList(){
         System.out.println("Please enter one of the following codes to perform an action:");
