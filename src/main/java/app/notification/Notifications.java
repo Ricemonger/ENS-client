@@ -4,6 +4,7 @@ import app.notification.dto.NotificationCreUpdRequest;
 import app.notification.dto.NotificationPKRequest;
 import app.services.Session;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
@@ -33,11 +34,11 @@ public class Notifications {
         return request(HttpMethod.DELETE,body);
     }
     public List<Notification> getAllByUsername(){
-        return getRequest("","/getByUN");
+        return getListRequest("","/getByUN");
     }
     public List<Notification> getAllByPrimaryKey(String name){
         NotificationPKRequest body = new NotificationPKRequest(name);
-        return getRequest(body,"/getByPK");
+        return getListRequest(body,"/getByPK");
     }
     private Notification request(HttpMethod method, Object body){
         return   webClient
@@ -45,10 +46,12 @@ public class Notifications {
                 .header("Authorization", session.bearer())
                 .bodyValue(body)
                 .retrieve()
+                .onStatus(HttpStatus.NOT_FOUND::equals, response -> response.bodyToMono(String.class).map(RuntimeException::new))
+                .onStatus(HttpStatus.FORBIDDEN::equals, response -> response.bodyToMono(String.class).map(RuntimeException::new))
                 .bodyToMono(Notification.class)
                 .block();
     }
-    private List<Notification> getRequest(Object body, String uriAttribute){
+    private List<Notification> getListRequest(Object body, String uriAttribute){
         return   webClient
                 .method(HttpMethod.GET)
                 .uri(uriAttribute)

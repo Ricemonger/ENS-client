@@ -5,6 +5,7 @@ import app.contact.dto.ContactKeyRequest;
 import app.contact.dto.ContactNNRequest;
 import app.services.Session;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
@@ -32,20 +33,23 @@ public class Contacts {
         ContactCreUpdRequest body = new ContactCreUpdRequest(method,contactId,notificationName);
         return request(HttpMethod.PATCH, body);
     }
+    public Contact update(Contact contact) {
+        return update(contact.getMethod().name(),contact.getContactId(), contact.getNotificationName());
+    }
     public Contact delete(String method, String contactId){
         ContactKeyRequest body = new ContactKeyRequest(method,contactId);
         return request(HttpMethod.DELETE, body);
     }
     public List<Contact> getAllByUsername(){
-        return getRequest("","/getByUN");
+        return getListRequest("","/getByUN");
     }
     public List<Contact> getAllByPrimaryKey(String method, String contactId){
         ContactKeyRequest body = new ContactKeyRequest(method, contactId);
-        return getRequest(body,"/getByPK");
+        return getListRequest(body,"/getByPK");
     }
     public List<Contact> getAllByNotificationName(String notificationName){
         ContactNNRequest body = new ContactNNRequest(notificationName);
-        return getRequest(body,"/getByNN");
+        return getListRequest(body,"/getByNN");
     }
     private Contact request(HttpMethod method, Object body){
         return   webClient
@@ -53,10 +57,12 @@ public class Contacts {
                 .header("Authorization", session.bearer())
                 .bodyValue(body)
                 .retrieve()
+                .onStatus(HttpStatus.NOT_FOUND::equals, response -> response.bodyToMono(String.class).map(RuntimeException::new))
+                .onStatus(HttpStatus.FORBIDDEN::equals, response -> response.bodyToMono(String.class).map(RuntimeException::new))
                 .bodyToMono(Contact.class)
                 .block();
     }
-    private List<Contact> getRequest(Object body, String uriAttribute){
+    private List<Contact> getListRequest(Object body, String uriAttribute){
         return   webClient
                 .method(HttpMethod.GET)
                 .uri(uriAttribute)

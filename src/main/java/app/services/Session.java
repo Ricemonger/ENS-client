@@ -4,6 +4,8 @@ import lombok.Data;
 import app.user.dto.UserLoginRequest;
 import app.user.dto.UserRegisterRequest;
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -25,32 +27,47 @@ public class Session {
     private Session(){}
 
     public static Session register(String username, String password){
-        Mono<String> jwtMono = webClient
-                .post()
-                .uri("/users/register")
-                .bodyValue(new UserRegisterRequest(username,password))
-                .retrieve()
-                .bodyToMono(String.class);
-        String jwt = jwtMono.block();
-        Session session = new Session();
-        session.bearerToken = "Bearer " + jwt;
-        return session;
+        try {
+            Mono<String> jwtMono = webClient
+                    .post()
+                    .uri("/users/register")
+                    .bodyValue(new UserRegisterRequest(username, password))
+                    .retrieve()
+                    .onStatus(HttpStatus.BAD_REQUEST::equals, response -> response.bodyToMono(String.class).map(RuntimeException::new))
+                    .bodyToMono(String.class);
+            String jwt = jwtMono.block();
+            Session session = new Session();
+            session.bearerToken = "Bearer " + jwt;
+            return session;
+        }
+        catch (RuntimeException e){
+            System.out.println(e.getMessage());
+            return loginOrRegister();
+        }
     }
     public static Session login(String username, String password){
-        UserLoginRequest request = new UserLoginRequest(username,password);
-        Mono<String> jwtMono = webClient
-                .post()
-                .uri("/users/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(request)
-                //.body(Mono.just(request), UserLoginRequest.class)
-                .retrieve()
-                .bodyToMono(String.class);
-        String jwt = jwtMono.block();
-        Session session = new Session();
-        session.bearerToken = "Bearer " + jwt;
-        return session;
+        try {
+            UserLoginRequest request = new UserLoginRequest(username, password);
+            Mono<String> jwtMono = webClient
+                    .post()
+                    .uri("/users/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .bodyValue(request)
+                    .retrieve()
+                    .onStatus(HttpStatus.BAD_REQUEST::equals, response -> response.bodyToMono(String.class).map(RuntimeException::new))
+                    .onStatus(HttpStatus.UNAUTHORIZED::equals, response -> response.bodyToMono(String.class).map(RuntimeException::new))
+                    .bodyToMono(String.class);
+            String jwt = jwtMono.block();
+            Session session = new Session();
+            session.bearerToken = "Bearer " + jwt;
+            return session;
+        }
+        catch (RuntimeException e){
+            System.out.println(e.getMessage());
+            return loginOrRegister();
+        }
+
     }
     public static Session loginOrRegister(){
         Session session;
