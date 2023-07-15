@@ -3,6 +3,7 @@ package app;
 import app.contact.Contacts;
 import app.notification.Notifications;
 import app.services.CodeListener;
+import app.services.Sender;
 import app.services.Session;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -25,7 +26,8 @@ public class App
         Session session = Session.loginOrRegister();
         Contacts contacts = new Contacts(session);
         Notifications notifications = new Notifications(session);
-        CodeListener codeListener = new CodeListener(contacts,notifications);
+        Sender sender = new Sender(session);
+        CodeListener codeListener = new CodeListener(contacts,notifications,sender);
         codeListener.start();
     }
     @Bean

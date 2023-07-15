@@ -12,11 +12,14 @@ public class CodeListener {
 
     private static final Scanner scanner = new Scanner(System.in);
 
-    private Contacts contacts;
-    private Notifications notifications;
-    public CodeListener(Contacts contacts, Notifications notifications){
+    private final Contacts contacts;
+    private final Notifications notifications;
+
+    private final Sender sender;
+    public CodeListener(Contacts contacts, Notifications notifications, Sender sender){
         this.contacts = contacts;
         this.notifications = notifications;;
+        this.sender = sender;
     }
     public void start() {
         int counter = 1;
@@ -60,6 +63,12 @@ public class CodeListener {
                     break;
                 case "34":
                     getNotificationsByPK();
+                    break;
+                case "40":
+                    sendOneNotification();
+                    break;
+                case "41":
+                    sendAllNotifications();
                     break;
                 case "100":
                     break whileLabel;
@@ -144,6 +153,14 @@ public class CodeListener {
             System.out.println(e.getMessage());
         }
     }
+    private void sendOneNotification() {
+        String method = ask("contact method");
+        String contactId = ask("contact id");
+        sender.sendOne(method, contactId);
+    }
+    private void sendAllNotifications() {
+        sender.sendAll();
+    }
     private void getNotificationsByUN(){
         System.out.println(notifications.getAllByUsername());
     }
@@ -171,8 +188,8 @@ public class CodeListener {
 
     private String chooseActionInCaseOfCreateUpdateException() {
         System.out.println("Enter one of following codes to choose action to perform in case if contact you trying to add already exists: ");
-        System.out.println("1 - update all already existing contacts");
-        System.out.println("2 - don't update all already existing contacts");
+        System.out.println("1 - update all next already existing contacts");
+        System.out.println("2 - don't update all next already existing contacts");
         System.out.println("3 - update this one anyway");
         System.out.println("anything else - don't update this one");
         System.out.print("Input code:");
@@ -198,6 +215,8 @@ public class CodeListener {
         System.out.println("32 - delete notification template");
         System.out.println("33 - get list of all your notification templates");
         System.out.println("34 - get list of your notification templates by Primary Key(Notification's name)");
+        System.out.println("40 - send emergency notification to one of your contacts");
+        System.out.println("41 - send emergency notifications to all your contacts");
         System.out.println("100 - finish program");
     }
 }
