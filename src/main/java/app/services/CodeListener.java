@@ -4,11 +4,16 @@ import app.contact.Contact;
 import app.contact.Contacts;
 import app.notification.Notifications;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Scanner;
 
 
 public class CodeListener {
+
+    private static final BufferedReader lineReader = new BufferedReader(new InputStreamReader(System.in));
 
     private static final Scanner scanner = new Scanner(System.in);
 
@@ -84,7 +89,7 @@ public class CodeListener {
         try {
             String method = ask("contact method");
             String contactId = ask("contact id");
-            String notificationName = ask("notification name or empty space");
+            String notificationName = askLine("notification name or empty space");
             System.out.println(contacts.create(method, contactId, notificationName) + " added to Database");
         }
         catch (RuntimeException e){
@@ -95,7 +100,7 @@ public class CodeListener {
         try {
             String method = ask("contact method");
             String contactId = ask("contact id");
-            String notificationName = ask("notification name or empty space");
+            String notificationName = askLine("notification name or empty space");
             System.out.println(contacts.update(method, contactId, notificationName) + " updated in Database");
         }
         catch (RuntimeException e){
@@ -121,13 +126,13 @@ public class CodeListener {
         System.out.println(contacts.getAllByPrimaryKey(method,contactId));
     }
     private void getContactsByNN(){
-        String notificationName = ask("notification name or empty space");
+        String notificationName = askLine("notification name or empty space");
         System.out.println(contacts.getAllByNotificationName(notificationName));
     }
     private void createNotification(){
         try {
-            String name = ask("name");
-            String text = ask("text");
+            String name = askLine("name");
+            String text = askLine("text");
             System.out.println(notifications.create(name, text) + " added to Database");
         }
         catch (RuntimeException e){
@@ -136,8 +141,8 @@ public class CodeListener {
     }
     private void updateNotification(){
         try{
-        String name = ask("name");
-        String text = ask("text");
+        String name = askLine("name");
+        String text = askLine("text");
         System.out.println(notifications.update(name,text) + " updated in Database");
         }
         catch (RuntimeException e){
@@ -146,7 +151,7 @@ public class CodeListener {
     }
     private void deleteNotification(){
         try{
-        String name = ask("name");
+        String name = askLine("name");
         System.out.println(notifications.delete(name) + " deleted from Database");
         }
         catch (RuntimeException e){
@@ -165,7 +170,7 @@ public class CodeListener {
         System.out.println(notifications.getAllByUsername());
     }
     private void getNotificationsByPK(){
-        String name = ask("name");
+        String name = askLine("name");
         System.out.println(notifications.getAllByPrimaryKey(name));
     }
     private void addContactsFromFile(){
@@ -199,6 +204,22 @@ public class CodeListener {
     private String ask(String what){
         System.out.printf("Input %s :",what);
         return scanner.next();
+    }
+    private String askLine(String what){
+        int c= 0;
+        while(c<5){
+            System.out.printf("Input %s :", what);
+            try {
+                return lineReader.readLine().trim();
+            }
+            catch (IOException e){
+                e.printStackTrace();
+                c++;
+                continue;
+            }
+        }
+        System.out.println("No valid string was entered, replaced with empty space");
+        return "";
     }
 
     private static void printCodeList(){

@@ -6,6 +6,7 @@ import app.contact.dto.ContactNNRequest;
 import app.services.Session;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
@@ -14,6 +15,7 @@ public class Contacts {
     private final WebClient webClient = WebClient
             .builder()
             .baseUrl(URL)
+            .defaultStatusHandler(HttpStatusCode::isError, response -> response.bodyToMono(String.class).map(RuntimeException::new))
             .build();
     private static final String URL = "http://localhost:8080/api/contacts";
     private final Session session;
@@ -57,8 +59,6 @@ public class Contacts {
                 .header("Authorization", session.bearer())
                 .bodyValue(body)
                 .retrieve()
-                .onStatus(HttpStatus.NOT_FOUND::equals, response -> response.bodyToMono(String.class).map(RuntimeException::new))
-                .onStatus(HttpStatus.FORBIDDEN::equals, response -> response.bodyToMono(String.class).map(RuntimeException::new))
                 .bodyToMono(Contact.class)
                 .block();
     }

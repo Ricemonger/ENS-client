@@ -5,6 +5,7 @@ import app.notification.dto.NotificationPKRequest;
 import app.services.Session;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
@@ -13,6 +14,7 @@ public class Notifications {
     private final WebClient webClient = WebClient
             .builder()
             .baseUrl(URL)
+            .defaultStatusHandler(HttpStatusCode::isError, response -> response.bodyToMono(String.class).map(RuntimeException::new))
             .build();
     private static final String URL = "http://localhost:8080/api/notifications";
     private final Session session;
@@ -46,8 +48,6 @@ public class Notifications {
                 .header("Authorization", session.bearer())
                 .bodyValue(body)
                 .retrieve()
-                .onStatus(HttpStatus.NOT_FOUND::equals, response -> response.bodyToMono(String.class).map(RuntimeException::new))
-                .onStatus(HttpStatus.FORBIDDEN::equals, response -> response.bodyToMono(String.class).map(RuntimeException::new))
                 .bodyToMono(Notification.class)
                 .block();
     }

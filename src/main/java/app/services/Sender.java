@@ -1,12 +1,14 @@
 package app.services;
 
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.web.reactive.function.client.WebClient;
 
 public class Sender {
     private final WebClient webClient = WebClient
             .builder()
             .baseUrl(URL)
+            .defaultStatusHandler(HttpStatusCode::isError, response -> response.bodyToMono(String.class).map(RuntimeException::new))
             .build();
     private static final String URL = "http://localhost:8080/api/send";
     private final Session session;

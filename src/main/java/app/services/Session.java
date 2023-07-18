@@ -3,8 +3,6 @@ package app.services;
 import lombok.Data;
 import app.user.dto.UserLoginRequest;
 import app.user.dto.UserRegisterRequest;
-import lombok.Getter;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -20,6 +18,7 @@ public class Session {
     private static final WebClient webClient = WebClient
             .builder()
             .baseUrl(URL)
+            .defaultStatusHandler(HttpStatusCode::isError, response -> response.bodyToMono(String.class).map(RuntimeException::new))
             .build();
     private String bearerToken;
 
@@ -33,7 +32,6 @@ public class Session {
                     .uri("/users/register")
                     .bodyValue(new UserRegisterRequest(username, password))
                     .retrieve()
-                    .onStatus(HttpStatus.BAD_REQUEST::equals, response -> response.bodyToMono(String.class).map(RuntimeException::new))
                     .bodyToMono(String.class);
             String jwt = jwtMono.block();
             Session session = new Session();
@@ -55,8 +53,6 @@ public class Session {
                     .accept(MediaType.APPLICATION_JSON)
                     .bodyValue(request)
                     .retrieve()
-                    .onStatus(HttpStatus.BAD_REQUEST::equals, response -> response.bodyToMono(String.class).map(RuntimeException::new))
-                    .onStatus(HttpStatus.UNAUTHORIZED::equals, response -> response.bodyToMono(String.class).map(RuntimeException::new))
                     .bodyToMono(String.class);
             String jwt = jwtMono.block();
             Session session = new Session();
