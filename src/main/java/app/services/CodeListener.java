@@ -2,11 +2,13 @@ package app.services;
 
 import app.contact.Contact;
 import app.contact.Contacts;
+import app.contact.Method;
 import app.notification.Notifications;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -88,33 +90,36 @@ public class CodeListener {
     }
     private void createContact(){
         try {
-            String method = ask("contact method");
+            String method = askMethod();
             String contactId = ask("contact id");
             String notificationName = askLine("notification name or empty space");
             System.out.println(contacts.create(method, contactId, notificationName) + " added to Database");
         }
         catch (RuntimeException e){
+            e.printStackTrace();
             System.out.println(e.getMessage());
         }
     }
     private void updateContact(){
         try {
-            String method = ask("contact method");
+            String method = askMethod();
             String contactId = ask("contact id");
             String notificationName = askLine("notification name or empty space");
             System.out.println(contacts.update(method, contactId, notificationName) + " updated in Database");
         }
         catch (RuntimeException e){
+            e.printStackTrace();
             System.out.println(e.getMessage());
         }
     }
     private void deleteContact(){
         try {
-            String method = ask("contact method");
+            String method = askMethod();
             String contactId = ask("contact id");
             System.out.println(contacts.delete(method, contactId) + " deleted from Database");
         }
         catch (RuntimeException e){
+            e.printStackTrace();
             System.out.println(e.getMessage());
         }
     }
@@ -122,9 +127,15 @@ public class CodeListener {
         System.out.println(contacts.getAllByUsername());
     }
     private void getContactsByPK(){
-        String method = ask("contact method");
-        String contactId = ask("contact id");
-        System.out.println(contacts.getAllByPrimaryKey(method,contactId));
+        try {
+            String method = askMethod();
+            String contactId = ask("contact id");
+            System.out.println(contacts.getAllByPrimaryKey(method, contactId));
+        }
+        catch (RuntimeException e){
+            e.printStackTrace();
+            System.out.println(e.getMessage());
+        }
     }
     private void getContactsByNN(){
         String notificationName = askLine("notification name or empty space");
@@ -137,6 +148,7 @@ public class CodeListener {
             System.out.println(notifications.create(name, text) + " added to Database");
         }
         catch (RuntimeException e){
+            e.printStackTrace();
             System.out.println(e.getMessage());
         }
     }
@@ -147,6 +159,7 @@ public class CodeListener {
         System.out.println(notifications.update(name,text) + " updated in Database");
         }
         catch (RuntimeException e){
+            e.printStackTrace();
             System.out.println(e.getMessage());
         }
     }
@@ -156,14 +169,21 @@ public class CodeListener {
         System.out.println(notifications.delete(name) + " deleted from Database");
         }
         catch (RuntimeException e){
+            e.printStackTrace();
             System.out.println(e.getMessage());
         }
     }
     private void sendOneNotification() {
-        String method = ask("contact method");
-        String contactId = ask("contact id");
-        System.out.println("sendOne method is executing");
-        sender.sendOne(method, contactId);
+        try {
+            String method = askMethod();
+            String contactId = ask("contact id");
+            System.out.println("sendOne method is executing");
+            sender.sendOne(method, contactId);
+        }
+        catch (RuntimeException e){
+            e.printStackTrace();
+            System.out.println(e.getMessage());
+        }
     }
     private void sendAllNotifications() {
         System.out.println("sendAll method is executing");
@@ -224,6 +244,22 @@ public class CodeListener {
         }
         System.out.println("No valid string was entered, replaced with empty space");
         return "";
+    }
+    private String askMethod(){
+            int c = 0;
+            while (c < 5) {
+                System.out.println("Input one of method values: " + Arrays.toString(Method.values()));
+                String res = ask("contact method");
+                try {
+                    Method method = Method.valueOf(res);
+                    return res;
+                } catch (IllegalArgumentException e) {
+                    System.out.println("Invalid enum value, try one more time");
+                    c++;
+                    continue;
+                }
+            }
+            throw new IllegalArgumentException();
     }
 
     private static void printCodeList(){
