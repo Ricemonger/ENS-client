@@ -14,7 +14,6 @@ import java.util.Scanner;
 public class CodeListener {
 
     private static final BufferedReader lineReader = new BufferedReader(new InputStreamReader(System.in));
-
     private static final Scanner scanner = new Scanner(System.in);
 
     private final Contacts contacts;
@@ -31,7 +30,9 @@ public class CodeListener {
         printCodeList();
         whileLabel:while(true) {
             System.out.print("Input your code: ");
-            String code = scanner.next();
+            String code = "";
+            if(scanner.hasNext())
+                code = scanner.next();
             switch (code) {
                 case "20":
                     createContact();
@@ -210,7 +211,8 @@ public class CodeListener {
         while(c<5){
             System.out.printf("Input %s :", what);
             try {
-                return lineReader.readLine().trim();
+                String line = lineReader.readLine().trim();
+                return line;
             }
             catch (IOException e){
                 e.printStackTrace();

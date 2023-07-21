@@ -76,8 +76,20 @@ public class Session {
         }
         System.out.print("Please insert your username: ");
         String username = consoleScanner.next();
+        try {
+            validateUsername(username);
+        }catch (InvalidUsernameException e){
+            System.out.println(e.getMessage());
+            return loginOrRegister();
+        }
         System.out.print("Please insert your password: ");
         String password = consoleScanner.next();
+        try {
+            validatePassword(password);
+        }catch (InvalidPasswordException e){
+            System.out.println(e.getMessage());
+            return loginOrRegister();
+        }
         if(act.equals("login")) {
             session = Session.login(username, password);
         }
@@ -85,6 +97,16 @@ public class Session {
             session = Session.register(username, password);
         }
         return session;
+    }
+    private static void validateUsername(String username){
+        String regex = ".*\\W+.*";
+        if(username.length()<6 || username.length()>24 || username.matches(regex))
+            throw new InvalidUsernameException();
+    }
+    private static void validatePassword(String password){
+        String regex = ".*[\\{\\}\\[\\]\\(\\):;'\".,<>/|\\\s]+.*";
+        if(password.length()<6 || password.length()>16 || password.matches(regex))
+            throw new InvalidPasswordException();
     }
     public String bearer(){
         return this.bearerToken;
