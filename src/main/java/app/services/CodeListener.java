@@ -162,9 +162,11 @@ public class CodeListener {
     private void sendOneNotification() {
         String method = ask("contact method");
         String contactId = ask("contact id");
+        System.out.println("sendOne method is executing");
         sender.sendOne(method, contactId);
     }
     private void sendAllNotifications() {
+        System.out.println("sendAll method is executing");
         sender.sendAll();
     }
     private void getNotificationsByUN(){
